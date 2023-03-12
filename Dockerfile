@@ -1,10 +1,20 @@
-FROM python:3.10-slim
+FROM rust:1.68-slim-buster as builder
+WORKDIR /app/src
 
-RUN useradd -ms /bin/bash user
-USER user
+# Force crates.io init for better docker caching
+RUN cargo search --limit 0
+
+COPY . .
+RUN cargo build --release
+
+
+
+FROM debian:10.13-slim as environment
 WORKDIR /app
 
-COPY http_server.py .
+RUN useradd user
+USER user
 
-EXPOSE 3000
-ENTRYPOINT ["python3", "./http_server.py"]
+COPY --from=builder /app/src/target/release/agartex-service .
+
+ENTRYPOINT [ "./agartex-service" ]
