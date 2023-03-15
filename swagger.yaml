@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: Agartex Service
+  description: |-
+    This is a server for compiling Latex documents and authenticating users
+  version: 0.0.1
+servers:
+  - url: http://localhost:3000
+  - url: some_domain
+tags:
+  - name: user
+    description: Operations about user
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Register user
+      description: This will register a new user with the given email and password.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: successful operation
+        400:
+          description: validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+  /user/login:
+    post:
+      tags:
+        - user
+      summary: Logs user into the system
+      description: |-
+        The session ID is returned in a cookie called 'RSESSID' and it must be included in authentication.
+        Required options: Secure, HttpOnly
+      operationId: loginUser
+      requestBody:
+        description: Login Credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        200:
+          description: successful operation
+          headers:
+            Set-Cookie:
+              description: Session token
+              schema:
+                type: string
+              example: RSESSID=token_value; Secure; HttpOnly
+        400:
+          description: Invalid email/password supplied
+components:
+  schemas:
+    Message:
+      type: object
+      properties:
+        message: 
+          type: string
+          example: Something to tell you
+    Credentials:
+      type: object
+      properties:
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: Password1@
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: Password1@
+  securitySchemes:
+    session_id:
+      type: apiKey
+      in: cookie
+      name: RSESSID
