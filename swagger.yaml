@@ -27,12 +27,14 @@ paths:
       responses:
         200:
           description: successful operation
-        400:
+        422:
           description: validation error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Message'
+        400:
+          description: malformed request
   /sessions:
     post:
       tags:
@@ -56,7 +58,7 @@ paths:
               description: Session token
               schema:
                 type: string
-              example: RSESSID=token_value; Secure; HttpOnly
+                example: RSESSID=token_value; Secure; HttpOnly
         400:
           description: Invalid request body
         401:
