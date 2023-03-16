@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.10"
-clap = { version = "4.1.8", features = ["derive"] }
 hyper = "0.14"
 tokio = { version = "1.26.0", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.37"

@@ -1,28 +1,28 @@
-use std::net::SocketAddr;
-use clap::Parser;
+use constants::SERVER_CONFIG;
 use hyper::Error;
-use routing::{get_main_router};
-use tracing::subscriber::SetGlobalDefaultError;
+use routing::get_main_router;
+use tracing::{error, subscriber::SetGlobalDefaultError};
 use tracing_subscriber::FmtSubscriber;
 
 // declare child modules
+mod constants;
 mod routing;
 
-#[derive(Debug, Parser)]
-pub struct LaunchConfig {
-    pub addr: SocketAddr
-}
-
-pub fn setup() -> Result<LaunchConfig, SetGlobalDefaultError> {
+#[tracing::instrument]
+pub fn setup() -> Result<(), SetGlobalDefaultError> {
     let subscriber = FmtSubscriber::new();
-    tracing::subscriber::set_global_default(subscriber)?;
-    Ok(LaunchConfig::parse())
+    tracing::subscriber::set_global_default(subscriber)
 }
 
 #[tracing::instrument]
-pub async fn run(config: LaunchConfig) -> Result<(), Error> {
+pub async fn run() -> Result<(), Error> {
     // run it with hyper
-    axum::Server::try_bind(&config.addr)?
-        .serve(get_main_router().into_make_service())
-        .await
+    if let Ok(config) = SERVER_CONFIG.verify() {
+        axum::Server::try_bind(&config.addr)?
+            .serve(get_main_router().into_make_service())
+            .await
+    } else {
+        error!("Bad server configuration!");
+        Ok(())
+    }
 }
