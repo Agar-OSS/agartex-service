@@ -11,7 +11,7 @@ tags:
   - name: user
     description: Operations about user
 paths:
-  /user:
+  /users:
     post:
       tags:
         - user
@@ -33,7 +33,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Message'
-  /user/login:
+  /sessions:
     post:
       tags:
         - user
@@ -58,7 +58,9 @@ paths:
                 type: string
               example: RSESSID=token_value; Secure; HttpOnly
         400:
-          description: Invalid email/password supplied
+          description: Invalid request body
+        401:
+          description: Authentication using supplied email and password failed
 components:
   schemas:
     Message:
