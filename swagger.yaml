@@ -23,18 +23,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/Credentials'
       responses:
-        200:
-          description: successful operation
+        201:
+          description: Successfully created user
         422:
-          description: validation error
+          description: Password too weak
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Message'
+        409:
+          description: Duplicate email
         400:
-          description: malformed request
+          description: Malformed request
   /sessions:
     post:
       tags:
