@@ -3,3 +3,4 @@ pub const DB_URL: &str  = "postgres://localhost:5432/agartex-db";
 pub const HASH_COST: u32 = 12;
 pub const SESSIONS_TABLE: &str = "sessions";
 pub const SESSION_ID: &str = "RSESSID";
+pub const CLIENT_URL: &str = "http://localhost:5000";
