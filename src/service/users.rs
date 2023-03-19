@@ -2,7 +2,7 @@ use axum::async_trait;
 use sqlx::PgPool;
 use tracing::{error, info};
 
-use crate::{domain::users::Credentials, constants::SERVER_CONFIG};
+use crate::{domain::users::Credentials, constants};
 
 pub enum UserCreationError {
     DuplicateEmail,
@@ -24,7 +24,7 @@ impl PgUserService {
     pub fn new(pool: &PgPool) -> Self {
         Self {
             pool: pool.clone(),
-            hash_cost: SERVER_CONFIG.hash_cost
+            hash_cost: constants::HASH_COST
         }
     }
 }

@@ -1,8 +1,8 @@
 use serde::Deserialize;
 
-#[derive(sqlx::FromRow, Debug)]
+#[derive(sqlx::FromRow, Debug, Clone)]
 pub struct User {
-    pub id: i64,
+    pub id: i32,
     pub email: String,
     pub password_hash: String
 }

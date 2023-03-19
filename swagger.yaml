@@ -27,16 +27,12 @@ paths:
       responses:
         201:
           description: Successfully created user
-        422:
-          description: Password too weak
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Message'
-        409:
-          description: Duplicate email
         400:
           description: Malformed request
+        409:
+          description: Duplicate email
+        422:
+          description: Password too weak
   /sessions:
     post:
       tags:
@@ -53,8 +49,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Credentials'
       responses:
-        200:
-          description: successful operation
+        201:
+          description: Successfully created session
           headers:
             Set-Cookie:
               description: Session token
@@ -62,9 +58,11 @@ paths:
                 type: string
                 example: RSESSID=token_value; Secure; HttpOnly
         400:
-          description: Invalid request body
+          description: Malformed request body
         401:
           description: Authentication using supplied email and password failed
+        422:
+          description: Request body format errors (e.g. password is a number instead of string)
 components:
   schemas:
     Message:

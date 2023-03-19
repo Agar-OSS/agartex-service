@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.70"
 axum = "0.6.10"
-axum_database_sessions = "7.0.0"
+axum_database_sessions = { version = "7.0.0", features = ["postgres-rustls"] }
 axum_sessions_auth = { version = "7.0.0", features = ["postgres-rustls"] }
 bcrypt = "0.14.0"
 hyper = "0.14"

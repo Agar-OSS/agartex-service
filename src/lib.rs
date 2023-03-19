@@ -1,4 +1,5 @@
-use constants::SERVER_CONFIG;
+use std::net::SocketAddr;
+
 use database::get_conn_pool;
 use hyper::Error;
 use routing::get_main_router;
@@ -11,24 +12,17 @@ mod routing;
 mod database;
 mod domain;
 mod service;
+mod auth;
 
 #[tracing::instrument]
 pub fn setup() {
     tracing_subscriber::fmt().init();
-    info!("Loggin setup complete!");
+    info!("Logging setup complete!");
 }
 
 #[tracing::instrument]
 pub async fn run() -> Result<(), Error> {
-    info!("Parsing config!");
-    let config = if let Ok(config) = SERVER_CONFIG.verify() {
-        info!("Parsed config successfully!");
-        config
-    } else {
-        error!("Bad server configuration!");
-        return Ok(());
-    };
-    let pool = match get_conn_pool(&config).await {
+    let pool = match get_conn_pool().await {
         Ok(pool) => pool,
         Err(err) => {
             error!("Could not connect to database:\n{:?}!", err);
@@ -36,8 +30,10 @@ pub async fn run() -> Result<(), Error> {
         }
     };
 
+    let (auth_config, session_store) = auth::auth_setup(&pool).await;
+
     info!("Running server!");
-    axum::Server::try_bind(&config.addr)?
-            .serve(get_main_router(&pool).into_make_service())
+    axum::Server::try_bind(&SocketAddr::from(constants::SERVER_URL))?
+            .serve(get_main_router(&pool, auth_config, session_store).into_make_service())
             .await
 }

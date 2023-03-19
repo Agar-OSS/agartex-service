@@ -5,9 +5,3 @@ CREATE TABLE users (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
-CREATE TABLE sessions (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
