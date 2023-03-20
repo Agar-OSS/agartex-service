@@ -12,6 +12,7 @@ mod routing;
 mod database;
 mod domain;
 mod service;
+mod repository;
 mod auth;
 
 #[tracing::instrument]
@@ -30,10 +31,9 @@ pub async fn run() -> Result<(), Error> {
         }
     };
 
-    let (auth_config, session_store) = auth::auth_setup(&pool).await;
 
     info!("Running server!");
     axum::Server::try_bind(&SocketAddr::from(constants::SERVER_URL))?
-            .serve(get_main_router(&pool, auth_config, session_store).into_make_service())
+            .serve(get_main_router(&pool).into_make_service())
             .await
 }

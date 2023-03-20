@@ -5,3 +5,9 @@ CREATE TABLE users (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE sessions (
+    id CHAR(256) PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    expires BIGINT NOT NULL
+);

@@ -1,39 +1,35 @@
 use std::fmt::Debug;
 
 use axum::{Extension, Json};
-use axum_database_sessions::SessionPgPool;
-use axum_sessions_auth::AuthSession;
+use axum_extra::extract::{CookieJar, cookie::Cookie};
+use cookie::time::OffsetDateTime;
 use hyper::StatusCode;
-use sqlx::PgPool;
 use tracing::info;
 
-use crate::{service::sessions::{SessionService, SessionCreationError}, auth::AuthUser, domain::users::Credentials};
+use crate::{service::sessions::{SessionService, LoginError}, domain::users::Credentials, constants::SESSION_ID};
 
 #[tracing::instrument(skip_all, fields(email = credentials.email))]
 pub async fn post_sessions<T: SessionService + Debug>(
-    Extension(service): Extension<T>, 
-    auth: AuthSession<AuthUser, i32, SessionPgPool, PgPool>, 
+    Extension(service): Extension<T>,
+    jar: CookieJar,
     Json(credentials): Json<Credentials>
-) -> Result<StatusCode, StatusCode> {
+) -> Result<(CookieJar, StatusCode), StatusCode> {
     info!("Attempting login for user {}", credentials.email);
-    let id = match service.login(credentials).await {
-        Err(SessionCreationError::NoUser) =>  {
+    let session = match service.login(credentials).await {
+        Err(LoginError::NoUser) =>  {
             return Err(StatusCode::UNAUTHORIZED);
         },
-        Err(SessionCreationError::Unknown) => {
+        Err(LoginError::Unknown) => {
             return Err(StatusCode::INTERNAL_SERVER_ERROR);
         },
-        Ok(id) => id
+        Ok(session) => session
     };
 
-    if let Some(AuthUser::Known(current_user)) = &auth.current_user {
-        if current_user.id == id {
-            auth.session.renew();
-        }
-    }
+    let cookie = Cookie::build(SESSION_ID, session.id)
+        .expires(OffsetDateTime::from_unix_timestamp(session.expires).unwrap())
+        .http_only(true)
+        // .secure(true) <-- add this when TLS is set up
+        .finish();
 
-    auth.session.set_store(true);
-    auth.login_user(id);
-    auth.remember_user(true);
-    return Ok(StatusCode::CREATED);
+    return Ok((jar.add(cookie), StatusCode::CREATED));
 }

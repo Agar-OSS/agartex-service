@@ -1,65 +1,126 @@
+use std::task::{Context, Poll};
+
 use anyhow::Result;
-use axum::async_trait;
-use axum_database_sessions::{SessionStore, SessionPgPool, SessionConfig, SessionMode};
-use axum_sessions_auth::{AuthConfig, Authentication};
-use sqlx::{PgPool, query_as};
+use axum::{
+    http::Request, body::{Body, BoxBody}, response::Response, extract::FromRequestParts, async_trait
+};
+use axum_extra::extract::CookieJar;
+use futures::future::BoxFuture;
+use http::{StatusCode, request::Parts};
+use rand::RngCore;
+use tower::{Layer, Service};
 
-use crate::{constants, domain::users::User};
+use crate::{
+    service::sessions::{SessionService, SessionVerifyError}, constants, domain::users::User,
+};
 
-#[derive(Clone, Debug)]
-pub enum AuthUser {
-    Guest,
-    Known(User)
+#[derive(Clone)]
+pub struct AuthLayer<T: SessionService + Clone> {
+    service: T
+}
+
+impl<T: SessionService + Clone> AuthLayer<T> {
+    pub fn new(session_service: T) -> Self {
+        Self { service: session_service }
+    }
+}
+
+impl<S, T: SessionService + Clone> Layer<S> for AuthLayer<T> {
+    type Service = AuthMiddleware<S, T>;
+
+    fn layer(&self, inner: S) -> Self::Service {
+        AuthMiddleware {
+            inner,
+            session_service: self.service.clone()
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct AuthMiddleware<S, T: SessionService> {
+    inner: S,
+    session_service: T
+}
+
+impl<S, T> Service<Request<Body>> for AuthMiddleware<S, T>
+where
+    S: Service<Request<Body>, Response = Response> + Send + Clone + 'static,
+    S::Future: Send + 'static,
+    T: SessionService + Send + Sync + Clone + 'static
+{
+    type Response = S::Response;
+    type Error = S::Error;
+    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.inner.poll_ready(cx)
+    }
+
+    fn call(&mut self, mut request: Request<Body>) -> Self::Future {
+        let session_cookie = match CookieJar::from_headers(&request.headers()).get(constants::SESSION_ID) {
+            Some(cookie) => cookie.clone(),
+            None => {
+                let response = Response::builder()
+                    .status(StatusCode::UNAUTHORIZED)
+                    .body(BoxBody::default())
+                    .unwrap();
+                return Box::pin(async move { Ok(response) });
+            }
+        };
+        
+        let session_service = self.session_service.clone();
+        let mut inner = self.inner.clone();
+
+        Box::pin(async move {
+            let user = match session_service.verify(session_cookie.value()).await {
+                Ok(user) => user,
+                Err(SessionVerifyError::Missing) => { 
+                    let response = Response::builder()
+                        .status(StatusCode::UNAUTHORIZED)
+                        .body(BoxBody::default())
+                        .unwrap();
+                    return Ok(response)
+                },
+                Err(SessionVerifyError::Unknown) => {
+                    let response = Response::builder()
+                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .body(BoxBody::default())
+                        .unwrap();
+                    return Ok(response)
+                }
+            };
+            
+            request.extensions_mut().insert(user);
+            Ok(inner.call(request).await?)
+        })
+    }
 }
 
 #[async_trait]
-impl Authentication<Self, i32, PgPool> for AuthUser {
-    async fn load_user(userid: i32, pool: Option<&PgPool>) -> Result<Self> {
-        let pool = match pool {
-            Some(pool) => pool,
-            None => return Err(anyhow::Error::msg("Can't authenticate user: no connection to database!"))
-        };
+impl<S> FromRequestParts<S> for User
+where
+    S: Send + Sync,
+{
+    type Rejection = (http::StatusCode, &'static str);
 
-        let result = query_as::<_, User>("SELECT * FROM users WHERE id = $1")
-            .bind(userid)
-            .fetch_optional(pool)
-            .await;
-        match result {
-            Ok(Some(user)) => Ok(Self::Known(user)),
-            Ok(None) => Ok(Self::Guest),
-            Err(err) => Err(err.into())
-        }
-    }
-
-    fn is_authenticated(&self) -> bool {
-        match self {
-            Self::Guest => false,
-            Self::Known(_) => true
-        }
-    }
-
-    fn is_active(&self) -> bool {
-        self.is_authenticated()
-    }
-
-    fn is_anonymous(&self) -> bool {
-        !self.is_authenticated()
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        parts
+            .extensions
+            .get::<User>()
+            .cloned()
+            .ok_or((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Can't extract User. Is `AuthLayer` enabled?",
+            ))
     }
 }
 
-pub async fn auth_setup(pool: &PgPool) -> (AuthConfig<i32>, SessionStore<SessionPgPool>) {
-    let session_config = SessionConfig::default()
-        .with_http_only(true)
-        // .with_secure(true)
-        .with_table_name(constants::SESSIONS_TABLE)
-        .with_cookie_name(constants::SESSION_ID)
-        .with_mode(SessionMode::Storable);
-
-    let auth_config = AuthConfig::default().set_cache(true);
-
-    let session_store = SessionStore::<SessionPgPool>::new(Some(pool.clone().into()), session_config);
-    session_store.initiate().await.unwrap();
-    session_store.cleanup().await.unwrap();
-
-    (auth_config, session_store)
+pub fn generate_session_id() -> String {
+    let mut nums: [u64; 4] = [0, 0, 0, 0];
+    let mut rng = rand::thread_rng();
+    nums[0] = rng.next_u64();
+    nums[1] = rng.next_u64();
+    nums[2] = rng.next_u64();
+    nums[3] = rng.next_u64();
+    format!("{}{}{}{}", nums[0], nums[1], nums[2], nums[3])
 }
