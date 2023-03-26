@@ -1,5 +1,6 @@
 use axum::async_trait;
 use sqlx::PgPool;
+use tracing::error;
 
 use crate::domain::users::{User, Credentials};
 
@@ -43,7 +44,7 @@ impl UserRepository for PgUserRepository {
             Ok(Some(user)) => Ok(user),
             Ok(None) => Err(UserGetError::Missing),
             Err(err) => {
-                tracing::error!(%err);
+                error!(%err);
                 Err(UserGetError::Unknown)
             }
         }
@@ -66,7 +67,7 @@ impl UserRepository for PgUserRepository {
                 if result.rows_affected() > 0 { Ok(()) } else { Err(UserInsertError::Duplicate) }
             },
             Err(err) => {
-                tracing::error!(%err);
+                error!(%err);
                 Err(UserInsertError::Unknown)
             }
         }
