@@ -77,7 +77,10 @@ where
         };
 
         match self.session_repository.insert(&session).await {
-            Ok(()) => Ok(session),
+            Ok(()) => {
+                info!("Login attempt succeeded");
+                Ok(session)
+            }
             Err(SessionInsertError::Unknown) => Err(LoginError::Unknown)
         }
     }

@@ -37,7 +37,7 @@ impl PgSessionRepository {
 
 #[async_trait]
 impl SessionRepository for PgSessionRepository {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip_all, fields(id = session.id))]
     async fn insert(&self, session: &Session) -> Result<(), SessionInsertError> {
         match sqlx::query("INSERT INTO sessions (session_id, user_id, expires) VALUES ($1, $2, $3)")
             .bind(&session.id)

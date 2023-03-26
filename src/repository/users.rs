@@ -34,7 +34,7 @@ impl PgUserRepository {
 
 #[async_trait]
 impl UserRepository for PgUserRepository {
-    #[tracing::instrument]
+    #[tracing::instrument(skip(self))]
     async fn get_by_email(&self, email: &str) -> Result<User, UserGetError> {
         let result = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
             .bind(email)

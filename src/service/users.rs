@@ -42,7 +42,10 @@ impl UserService for PgUserService {
         };
 
         match self.repository.insert(Credentials { email: credentials.email, password: password_hash}).await {
-            Ok(_) => Ok(()),
+            Ok(_) => {
+                info!("Registration attempt succeeded");
+                Ok(())
+            },
             Err(UserInsertError::Duplicate) => Err(UserCreationError::DuplicateEmail),
             Err(UserInsertError::Unknown) => Err(UserCreationError::Unknown)
         }
