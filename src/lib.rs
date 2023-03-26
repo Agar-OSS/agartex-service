@@ -1,5 +1,3 @@
-use std::net::SocketAddr;
-
 use database::create_conn_pool;
 use hyper::Error;
 use routing::get_main_router;
@@ -14,6 +12,7 @@ mod domain;
 mod service;
 mod repository;
 mod auth;
+mod validation;
 
 #[tracing::instrument]
 pub fn setup() {
@@ -32,7 +31,7 @@ pub async fn run() -> Result<(), Error> {
     };
 
     info!("Running server!");
-    axum::Server::try_bind(&SocketAddr::from(constants::SERVER_URL))?
+    axum::Server::try_bind(&constants::SERVER_URL)?
             .serve(get_main_router(&pool).into_make_service())
             .await
 }

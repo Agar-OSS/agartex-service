@@ -32,7 +32,11 @@ paths:
         409:
           description: Duplicate email
         422:
-          description: Password too weak
+          description: Request body validation errors (e.g. incorrect email format, weak password)
+          content:
+            text/plain:
+              schema:
+                type: string
   /sessions:
     post:
       tags:
@@ -62,7 +66,11 @@ paths:
         401:
           description: Authentication using supplied email and password failed
         422:
-          description: Request body format errors (e.g. password is a number instead of string)
+          description: Request body validation errors (e.g. incorrect email format, weak password)
+          content:
+            text/plain:
+              schema:
+                type: string
 components:
   schemas:
     Message:

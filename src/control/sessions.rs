@@ -1,18 +1,18 @@
 use std::fmt::Debug;
 
-use axum::{Extension, Json};
+use axum::Extension;
 use axum_extra::extract::{CookieJar, cookie::Cookie};
 use cookie::time::OffsetDateTime;
 use hyper::StatusCode;
 use tracing::info;
 
-use crate::{service::sessions::{SessionService, LoginError}, domain::users::Credentials, constants::SESSION_COOKIE_NAME};
+use crate::{service::sessions::{SessionService, LoginError}, domain::users::Credentials, constants::SESSION_COOKIE_NAME, validation::ValidatedJson};
 
 #[tracing::instrument(skip_all, fields(email = credentials.email))]
 pub async fn post_sessions<T: SessionService + Debug>(
     Extension(service): Extension<T>,
     jar: CookieJar,
-    Json(credentials): Json<Credentials>
+    ValidatedJson(credentials): ValidatedJson<Credentials>
 ) -> Result<(CookieJar, StatusCode), StatusCode> {
     info!("Received login attempt");
     let session = match service.login(credentials).await {
