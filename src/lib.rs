@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use database::get_conn_pool;
+use database::create_conn_pool;
 use hyper::Error;
 use routing::get_main_router;
 use tracing::{error, info};
@@ -23,14 +23,13 @@ pub fn setup() {
 
 #[tracing::instrument]
 pub async fn run() -> Result<(), Error> {
-    let pool = match get_conn_pool().await {
+    let pool = match create_conn_pool().await {
         Ok(pool) => pool,
         Err(err) => {
-            error!("Could not connect to database:\n{:?}!", err);
+            error!("Could not connect to database:\n{:?}", err);
             return Ok(());
         }
     };
-
 
     info!("Running server!");
     axum::Server::try_bind(&SocketAddr::from(constants::SERVER_URL))?

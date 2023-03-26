@@ -48,10 +48,13 @@ where
 {
     #[tracing::instrument(skip_all, field(email = credentials.email))]
     async fn login(&self, credentials: Credentials) -> Result<Session, LoginError> {
-        info!("Checking if user with email {} exists...", credentials.email);
+        info!("Attempting to login user");
         let user = match self.user_repository.get_by_email(&credentials.email).await {
             Ok(user) => user,
-            Err(UserGetError::Missing) => return Err(LoginError::NoUser),
+            Err(UserGetError::Missing) => {
+                warn!("Login attempt failed");
+                return Err(LoginError::NoUser)
+            },
             Err(UserGetError::Unknown) => return Err(LoginError::Unknown)
         };
 
@@ -61,7 +64,7 @@ where
                 return Err(LoginError::Unknown);
             },
             Ok(false) => {
-                warn!("Password for user with email {} doesn't match!", credentials.email);
+                warn!("Login attempt failed");
                 return Err(LoginError::NoUser);
             },
             Ok(true) => ()

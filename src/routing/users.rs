@@ -1,19 +1,14 @@
-use axum::{Router, routing, Extension, http::HeaderValue};
-use hyper::Method;
+use axum::{Router, routing, Extension};
 use sqlx::PgPool;
-use tower_http::cors::CorsLayer;
 
-use crate::{control, service::users::PgUserService, constants};
+use crate::{control, service::users::PgUserService, repository::users::PgUserRepository};
 
 pub fn users_router(pool: &PgPool) -> Router {
-    let cors = CorsLayer::new()
-        .allow_methods([Method::POST])
-        .allow_origin(constants::CLIENT_URL.parse::<HeaderValue>().unwrap());
+    let user_service = PgUserService::new(PgUserRepository::new(pool));
 
     let handler = routing::post(control::users::post_users::<PgUserService>)
-        .layer(Extension(PgUserService::new(pool)));
+        .layer(Extension(user_service));
     
     Router::new()
         .route("/", handler)
-        .layer(cors)
 }

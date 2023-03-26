@@ -8,7 +8,7 @@ use crate::{domain::users::Credentials, service::users::{UserService, UserCreati
 
 #[tracing::instrument(skip_all, fields(email = credentials.email))]
 pub async fn post_users<T: UserService + Debug>(Extension(service): Extension<T>, Json(credentials): Json<Credentials>) -> Result<StatusCode, StatusCode> {
-    info!("Received request {}", credentials.email);
+    info!("Received registration attempt");
     match service.register(credentials).await {
         Ok(()) => Ok(StatusCode::CREATED),
         Err(UserCreationError::DuplicateEmail) => Err(StatusCode::CONFLICT),

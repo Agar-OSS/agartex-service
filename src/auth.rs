@@ -57,7 +57,7 @@ where
     }
 
     fn call(&mut self, mut request: Request<Body>) -> Self::Future {
-        let session_cookie = match CookieJar::from_headers(&request.headers()).get(constants::SESSION_ID) {
+        let session_cookie = match CookieJar::from_headers(&request.headers()).get(constants::SESSION_COOKIE_NAME) {
             Some(cookie) => cookie.clone(),
             None => {
                 let response = Response::builder()

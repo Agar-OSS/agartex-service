@@ -9,6 +9,7 @@ pub enum UserGetError {
 }
 
 pub enum UserInsertError {
+    Duplicate,
     Unknown
 }
 
@@ -25,8 +26,8 @@ pub struct PgUserRepository {
 
 
 impl PgUserRepository {
-    pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+    pub fn new(pool: &PgPool) -> Self {
+        Self { pool: pool.clone() }
     }
 }
 
@@ -40,10 +41,7 @@ impl UserRepository for PgUserRepository {
             .await;
         match result {
             Ok(Some(user)) => Ok(user),
-            Ok(None) => {
-                tracing::warn!("User with email {} does not exist!", email);
-                Err(UserGetError::Missing)
-            },
+            Ok(None) => Err(UserGetError::Missing),
             Err(err) => {
                 tracing::error!(%err);
                 Err(UserGetError::Unknown)
@@ -51,16 +49,22 @@ impl UserRepository for PgUserRepository {
         }
     }
 
-    #[tracing::instrument]
+    #[tracing::instrument(skip_all, fields(email = credentials.email))]
     async fn insert(&self, credentials: Credentials) -> Result<(), UserInsertError> {
-        let result = sqlx::query("INSERT INTO users (email, password_hash) VALUES ($1, $2)")
+        let result = sqlx::query(
+            "INSERT INTO users (email, password_hash) 
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+        ")
             .bind(&credentials.email)
             .bind(&credentials.password)
             .execute(&self.pool)
             .await;
 
         match result {
-            Ok(_) => Ok(()),
+            Ok(result) => {
+                if result.rows_affected() > 0 { Ok(()) } else { Err(UserInsertError::Duplicate) }
+            },
             Err(err) => {
                 tracing::error!(%err);
                 Err(UserInsertError::Unknown)

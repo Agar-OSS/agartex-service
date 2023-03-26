@@ -30,8 +30,8 @@ pub struct PgSessionRepository {
 }
 
 impl PgSessionRepository {
-    pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+    pub fn new(pool: &PgPool) -> Self {
+        Self { pool: pool.clone() }
     }
 }
 
@@ -39,7 +39,7 @@ impl PgSessionRepository {
 impl SessionRepository for PgSessionRepository {
     #[tracing::instrument(skip(self))]
     async fn insert(&self, session: &Session) -> Result<(), SessionInsertError> {
-        match sqlx::query("INSERT INTO sessions (id, user_id, expires) VALUES ($1, $2, $3)")
+        match sqlx::query("INSERT INTO sessions (session_id, user_id, expires) VALUES ($1, $2, $3)")
             .bind(&session.id)
             .bind(&session.user.id)
             .bind(&session.expires)
@@ -56,14 +56,10 @@ impl SessionRepository for PgSessionRepository {
     #[tracing::instrument(skip(self))]
     async fn get(&self, id: &str) -> Result<Session, SessionGetError> {
         let session = sqlx::query_as::<_, Session>("
-            SELECT
-                sessions.id AS session_id, 
-                sessions.user_id AS user_id, 
-                sessions.expires as expires, 
-                users.email AS email, 
-                users.password_hash AS password_hash
-            FROM sessions, users
-            WHERE sessions.id = $1
+            SELECT session_id, users.user_id, expires, email, password_hash
+            FROM sessions JOIN users
+            ON sessions.user_id = users.user_id
+            WHERE sessions.session_id = $1
         ")
             .bind(id)
             .fetch_optional(&self.pool)

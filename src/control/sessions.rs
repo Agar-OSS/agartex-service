@@ -6,7 +6,7 @@ use cookie::time::OffsetDateTime;
 use hyper::StatusCode;
 use tracing::info;
 
-use crate::{service::sessions::{SessionService, LoginError}, domain::users::Credentials, constants::SESSION_ID};
+use crate::{service::sessions::{SessionService, LoginError}, domain::users::Credentials, constants::SESSION_COOKIE_NAME};
 
 #[tracing::instrument(skip_all, fields(email = credentials.email))]
 pub async fn post_sessions<T: SessionService + Debug>(
@@ -14,7 +14,7 @@ pub async fn post_sessions<T: SessionService + Debug>(
     jar: CookieJar,
     Json(credentials): Json<Credentials>
 ) -> Result<(CookieJar, StatusCode), StatusCode> {
-    info!("Attempting login for user {}", credentials.email);
+    info!("Received login attempt");
     let session = match service.login(credentials).await {
         Err(LoginError::NoUser) =>  {
             return Err(StatusCode::UNAUTHORIZED);
@@ -25,7 +25,7 @@ pub async fn post_sessions<T: SessionService + Debug>(
         Ok(session) => session
     };
 
-    let cookie = Cookie::build(SESSION_ID, session.id)
+    let cookie = Cookie::build(SESSION_COOKIE_NAME, session.id)
         .expires(OffsetDateTime::from_unix_timestamp(session.expires).unwrap())
         .http_only(true)
         // .secure(true) <-- add this when TLS is set up
