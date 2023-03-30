@@ -31,6 +31,8 @@ paths:
           description: Malformed request
         409:
           description: Duplicate email
+        415:
+          description: Unsupported media type
         422:
           description: Request body validation errors (e.g. incorrect email format, weak password)
           content:
@@ -65,6 +67,8 @@ paths:
           description: Malformed request body
         401:
           description: Authentication using supplied email and password failed
+        415:
+          description: Unsupported media type
         422:
           description: Request body validation errors (e.g. incorrect email format, weak password)
           content:
