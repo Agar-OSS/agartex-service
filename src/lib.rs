@@ -17,7 +17,6 @@ mod validation;
 pub fn setup() {
     tracing_subscriber::fmt().init();
     info!("Logging setup complete!");
-    dotenv::dotenv().ok();
     info!("Loaded environment variables")
 }
 

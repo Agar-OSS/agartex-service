@@ -1,0 +1,29 @@
+# Dev purpose only
+x-db-name: &DB_NAME
+  agartex-db
+x-db-username: &DB_USERNAME
+  postgres
+x-db-password: &DB_PASSWORD
+  very_secure_password
+
+services:
+  postgres:
+    image: postgres:15.2
+    environment:
+      POSTGRES_DB: *DB_NAME
+      POSTGRES_USER: *DB_USERNAME
+      POSTGRES_PASSWORD: *DB_PASSWORD
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+  agartex-service:
+    image: agaross.azurecr.io/agar-oss/agartex-service:latest
+    environment:
+      PGDATABASE: *DB_NAME
+      PGUSER: *DB_USERNAME
+      PGPASSWORD: *DB_PASSWORD
+      PGHOST: postgres
+    ports:
+      - 3000:3000
