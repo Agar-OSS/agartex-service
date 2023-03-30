@@ -1,3 +1,4 @@
+/compose.yaml
 /Dockerfile
 /.dockerignore
 /.git
@@ -5,5 +6,6 @@
 /.github
 /LICENSE
 /latex
+/postgres
 /README.md
 /target

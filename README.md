@@ -20,7 +20,14 @@ cargo run
 
 ## Docker
 
+### Build
 ```
 docker build -t agaross.azurecr.io/agar-oss/latex-base latex
 docker build -t agaross.azurecr.io/agar-oss/agartex-service .
+```
+
+### Run
+```
+docker-compose up -d # To start database and service
+docker-compose down -v # To stop database and service
 ```
