@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:15.2
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: very_secure_password
+      POSTGRES_DB: agartex-db
+      POSTGRES_USER: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - ../data:/var/lib/postgresql/data
+
