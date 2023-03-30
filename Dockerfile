@@ -9,14 +9,9 @@ RUN cargo build --release
 
 
 
-FROM debian:10.13-slim as environment
-WORKDIR /app
+FROM agaross.azurecr.io/agar-oss/latex-base:latest as environment
 
-# Setup latex
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y texlive-full && \
-    rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 RUN chmod 777 .
 
 RUN useradd user
@@ -31,4 +26,5 @@ RUN cd tex && \
     pdflatex example.tex && \
     cd ..
 
+EXPOSE 3000
 ENTRYPOINT [ "./agartex-service" ]

@@ -18,3 +18,9 @@ You can change environment variables by modifying .env
 cargo run
 ```
 
+## Docker
+
+```
+docker build -t agaross.azurecr.io/agar-oss/latex-base latex
+docker build -t agaross.azurecr.io/agar-oss/agartex-service .
+```
