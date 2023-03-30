@@ -3,8 +3,11 @@
 Service with backend functionalities for AgarTeX
 
 ## How to run postgres from project root
+This requires that postgres is not running on your machine already.
+
+If it is, change the port mapping.
 ```
-cd postgres && docker-compose up
+cd postgres && docker compose up -d
 ```
 
 ## How to run service
