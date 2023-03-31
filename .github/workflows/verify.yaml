@@ -27,3 +27,12 @@ jobs:
         with:
           push: false
           tags: agaross.azurecr.io/agar-oss/agartex-service:latest
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
