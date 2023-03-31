@@ -41,8 +41,8 @@ impl SessionRepository for PgSessionRepository {
     async fn insert(&self, session: &Session) -> Result<(), SessionInsertError> {
         match sqlx::query("INSERT INTO sessions (session_id, user_id, expires) VALUES ($1, $2, $3)")
             .bind(&session.id)
-            .bind(&session.user.id)
-            .bind(&session.expires)
+            .bind(session.user.id)
+            .bind(session.expires)
             .execute(&self.pool)
             .await {
                 Ok(_) => Ok(()),

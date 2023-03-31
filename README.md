@@ -12,10 +12,13 @@ cd postgres && docker compose up -d
 
 ## How to run service
 This requires postgres to be running.
-You can change environment variables by modifying .env
-
 ```
 cargo run
+```
+
+Run linter
+```
+cargo clippy --all-targets --all-features --fix -- -D warnings
 ```
 
 ## Docker
