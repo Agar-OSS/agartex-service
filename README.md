@@ -18,7 +18,7 @@ cargo run
 
 Run linter
 ```
-cargo clippy --all-targets --all-features -- -D warnings
+cargo clippy --all-targets --all-features --fix -- -D warnings
 ```
 
 ## Docker
