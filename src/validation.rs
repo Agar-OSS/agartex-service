@@ -34,7 +34,7 @@ where
             Ok(Json(data)) => Self(data),
             Err(err) => return Err(ValidatedJsonRejection::JsonRejection(err.into()))
         };
-        data.validate().map_err(|errs| ValidatedJsonRejection::ValidationRejection(errs))?;
+        data.validate().map_err(ValidatedJsonRejection::ValidationRejection)?;
         Ok(Self(data))
     }
 }

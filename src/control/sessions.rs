@@ -31,5 +31,5 @@ pub async fn post_sessions<T: SessionService + Debug>(
         // .secure(true) <-- add this when TLS is set up
         .finish();
 
-    return Ok((jar.add(cookie), StatusCode::CREATED));
+    Ok((jar.add(cookie), StatusCode::CREATED))
 }
