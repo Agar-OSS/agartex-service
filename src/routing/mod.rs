@@ -17,8 +17,6 @@ pub fn get_main_router(pool: &PgPool) -> Router {
     
     let authorized_handler = get(|user: User| async move { format!("Hello, {}", user.email) })
         .layer(auth);
-    
-    
 
     let cors = match env::var(constants::CLIENT_URL_ENV_VAR) {
         Ok(client_url) => CorsLayer::new()
@@ -35,7 +33,4 @@ pub fn get_main_router(pool: &PgPool) -> Router {
         .route("/", get(|| async { "Hello, World!" }))
         .route("/authorized", authorized_handler)
         .layer(cors)
-
-    // setup CORS, if possible
-    
 }
