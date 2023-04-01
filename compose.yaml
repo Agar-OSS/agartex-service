@@ -25,6 +25,5 @@ services:
       PGUSER: *DB_USERNAME
       PGPASSWORD: *DB_PASSWORD
       PGHOST: postgres
-      CLIENT_URL: http://68.219.109.240:5000
     ports:
       - 3000:3000
