@@ -70,19 +70,13 @@ paths:
         415:
           description: Unsupported media type
         422:
-          description: Request body validation errors (e.g. incorrect email format, weak password)
+          description: Request body validation errors (e.g. missing password field)
           content:
             text/plain:
               schema:
                 type: string
 components:
   schemas:
-    Message:
-      type: object
-      properties:
-        message: 
-          type: string
-          example: Something to tell you
     Credentials:
       type: object
       properties:
