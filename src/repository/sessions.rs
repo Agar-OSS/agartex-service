@@ -1,4 +1,5 @@
 use axum::async_trait;
+use mockall::automock;
 use sqlx::PgPool;
 use tracing::error;
 
@@ -17,6 +18,7 @@ pub enum SessionInsertError {
     Unknown
 }
 
+#[automock]
 #[async_trait]
 pub trait SessionRepository {
     async fn insert(&self, session: &Session) -> Result<(), SessionInsertError>;

@@ -5,7 +5,7 @@ use http::HeaderValue;
 use sqlx::PgPool;
 use tower_http::cors::{CorsLayer, Any};
 
-use crate::{constants, domain::users::User, auth::AuthLayer, service::sessions::BcryptSessionService, repository::{sessions::PgSessionRepository, users::PgUserRepository}};
+use crate::{constants, domain::users::User, auth::AuthLayer, service::{sessions::HashSessionService, hash::BcryptHashService}, repository::{sessions::PgSessionRepository, users::PgUserRepository}};
 
 use self::{users::users_router, sessions::sessions_router};
 
@@ -13,8 +13,14 @@ mod users;
 mod sessions;
 
 pub fn get_main_router(pool: &PgPool) -> Router {
-    let auth = AuthLayer::new(BcryptSessionService::new(PgSessionRepository::new(pool), PgUserRepository::new(pool)));
-    
+    let auth = AuthLayer::new(
+        HashSessionService::new(
+            PgSessionRepository::new(pool), 
+            PgUserRepository::new(pool), 
+            BcryptHashService::new()
+        )
+    );
+
     let authorized_handler = get(|user: User| async move { format!("Hello, {}", user.email) })
         .layer(auth);
 

@@ -1,4 +1,5 @@
 use axum::async_trait;
+use mockall::automock;
 use sqlx::PgPool;
 use tracing::error;
 
@@ -14,6 +15,7 @@ pub enum UserInsertError {
     Unknown
 }
 
+#[automock]
 #[async_trait]
 pub trait UserRepository {
     async fn get_by_email(&self, email: &str) -> Result<User, UserGetError>;
