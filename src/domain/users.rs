@@ -3,7 +3,7 @@ use validator::{Validate, ValidationError};
 
 use crate::constants;
 
-#[derive(sqlx::FromRow, Debug, Clone)]
+#[derive(sqlx::FromRow, Debug, Clone, PartialEq)]
 pub struct User {
     #[sqlx(rename = "user_id")]
     pub id: i32,
@@ -11,7 +11,7 @@ pub struct User {
     pub password_hash: String
 }
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, PartialEq)]
 pub struct Credentials {
     #[validate(email)]
     pub email: String,

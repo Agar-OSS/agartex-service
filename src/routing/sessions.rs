@@ -1,12 +1,16 @@
 use axum::{routing, Router, Extension};
 use sqlx::PgPool;
 
-use crate::{service::sessions::BcryptSessionService, control, repository::{sessions::PgSessionRepository, users::PgUserRepository}};
+use crate::{service::{sessions::HashSessionService, hash::BcryptHashService}, control::sessions, repository::{sessions::PgSessionRepository, users::PgUserRepository}};
 
 pub fn sessions_router(pool: &PgPool) -> Router {
-    let session_service = BcryptSessionService::new(PgSessionRepository::new(pool), PgUserRepository::new(pool));
+    let session_service = HashSessionService::new(
+        PgSessionRepository::new(pool), 
+        PgUserRepository::new(pool), 
+        BcryptHashService::new()
+    );
 
-    let handler = routing::post(control::sessions::post_sessions::<BcryptSessionService<PgSessionRepository, PgUserRepository>>)
+    let handler = routing::post(sessions::post_sessions::<HashSessionService<PgSessionRepository, PgUserRepository, BcryptHashService>>)
         .layer(Extension(session_service));
 
     Router::new()
