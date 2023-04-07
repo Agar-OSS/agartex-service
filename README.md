@@ -16,6 +16,11 @@ This requires postgres to be running.
 cargo run
 ```
 
+Run tests
+```
+cargo test
+```
+
 Run linter
 ```
 cargo clippy --all-targets --all-features --fix -- -D warnings
