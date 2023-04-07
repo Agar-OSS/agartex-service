@@ -33,3 +33,6 @@ pub async fn post_sessions<T: SessionService + Debug>(
 
     Ok((jar.add(cookie), StatusCode::CREATED))
 }
+
+#[cfg(test)]
+mod tests;
