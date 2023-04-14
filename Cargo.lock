@@ -21,6 +21,7 @@ dependencies = [
  "serde",
  "sqlx",
  "tokio",
+ "tokio-util",
  "tower",
  "tower-http",
  "tracing",
@@ -1704,6 +1705,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fb52b74f05dbf495a8fba459fdc331812b96aa086d9eb78101fa0d4569c3313"
 dependencies = [
  "futures-core",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
+name = "tokio-util"
+version = "0.7.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5427d89453009325de0d8f342c9490009f76e999cb7672d77e46267448f7e6b2"
+dependencies = [
+ "bytes",
+ "futures-core",
+ "futures-sink",
  "pin-project-lite",
  "tokio",
 ]

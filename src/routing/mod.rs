@@ -7,10 +7,11 @@ use tower_http::cors::{CorsLayer, Any};
 
 use crate::{constants, domain::users::User, auth::AuthLayer, service::{sessions::HashSessionService, hash::BcryptHashService}, repository::{sessions::PgSessionRepository, users::PgUserRepository}};
 
-use self::{users::users_router, sessions::sessions_router};
+use self::{users::users_router, sessions::sessions_router, compile::compile_router};
 
 mod users;
 mod sessions;
+mod compile;
 
 pub fn get_main_router(pool: &PgPool) -> Router {
     let auth = AuthLayer::new(
@@ -36,6 +37,7 @@ pub fn get_main_router(pool: &PgPool) -> Router {
     Router::new()
         .nest("/users", users_router(pool))
         .nest("/sessions", sessions_router(pool))
+        .nest("/compile", compile_router())
         .route("/", get(|| async { "Hello, World!" }))
         .route("/authorized", authorized_handler)
         .layer(cors)

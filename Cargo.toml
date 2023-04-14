@@ -21,6 +21,7 @@ regex = "1.7.3"
 serde = { version = "1.0.156", features = ["derive"] }
 sqlx = { version = "0.6.2", features = ["postgres", "runtime-tokio-rustls", "chrono"] }
 tokio = { version = "1.26.0", features = ["macros", "rt-multi-thread"] }
+tokio-util = { version = "0.7.7", features = ["io"] }
 tower = "0.4.13"
 tower-http = { version = "0.4.0", features = ["cors"] }
 tracing = "0.1.37"

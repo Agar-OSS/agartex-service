@@ -10,6 +10,8 @@ servers:
 tags:
   - name: user
     description: Operations about user
+  - name: compile
+    description: LaTeX document compilation
 paths:
   /users:
     post:
@@ -75,6 +77,78 @@ paths:
             text/plain:
               schema:
                 type: string
+  /projects/{id}/pdf:
+    post:
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Numeric ID of the affected project
+      tags:
+        - compile
+      summary: Returns the compiled PDF for a given project and compiles it if needed.
+      description: |-
+        Returns a pdf, which will be compiled if needed. Takes in options to control the compilation process.
+      operationId: compile
+      requestBody:
+        description: Compile options
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompileOptions'
+      responses:
+        200:
+          description: PDF file
+          content: 
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        400:
+          description: Malformed request body
+        401:
+          description: Unauthorized to execute operation
+        415:
+          description: Unsupported media type
+        422:
+          description: Request validation errors (e.g. missing required fields in options)
+  /compile:
+    post:
+      tags:
+        - compile 
+      summary: Compiles the provided LaTeX text into a pdf file
+      description: |-
+        Takes in text that should be a valid LaTeX document and returns the compiled PDF.
+      operationId: simpleCompile
+      requestBody:
+        description: Document body
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        200:
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        400:
+          description: Malformed request
+        401:
+          description: Unauthorized to execute operation
+        415:
+          description: Unsupported media type
+        422:
+          description: Compilation errors
+          content:
+            text/plain:
+              schema: 
+                type: string
+
 components:
   schemas:
     Credentials:
@@ -99,6 +173,20 @@ components:
         password:
           type: string
           example: Password1@
+    CompileOptions:
+      type: object
+      properties:
+        entrypoint:
+          type: string
+          nullable: true
+          example: main.tex
+        force:
+          type: boolean
+          example: false
+        text:
+          type: string
+      required:
+        - entrypoint
   securitySchemes:
     session_id:
       type: apiKey
