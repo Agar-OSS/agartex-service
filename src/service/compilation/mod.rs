@@ -35,11 +35,11 @@ pub enum SimpleCompilationError {
     Message(String)
 }
 
-impl Into<String> for SimpleCompilationError {
-    fn into(self) -> String {
-        match self {
-            Self::Unexpected => "UNKNOWN ERROR".to_owned(),
-            Self::Message(msg) => msg
+impl From<SimpleCompilationError> for String {
+    fn from(err: SimpleCompilationError) -> String {
+        match err {
+            SimpleCompilationError::Unexpected => "UNKNOWN ERROR".to_owned(),
+            SimpleCompilationError::Message(msg) => msg
         }
     }
 }
