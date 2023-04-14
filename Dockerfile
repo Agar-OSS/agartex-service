@@ -23,7 +23,7 @@ COPY --from=builder /app/src/target/release/agartex-service .
 RUN mkdir tex
 COPY example.tex tex/example.tex
 RUN cd tex && \
-    pdflatex example.tex && \
+    latexmk -pdf example.tex && \
     cd ..
 
 EXPOSE 3000

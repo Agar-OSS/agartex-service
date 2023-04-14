@@ -64,8 +64,6 @@ impl CompilationService for SimpleCompilationService<ProcessExecutionService> {
         let output_path = constants::COMPILE_DIR
             .join(rand_id.to_string());
 
-        // let outputdir_arg = ;
-
         let args = [
             format!("-outdir={}", output_path.to_str().unwrap()),
             "-pdf".to_string(),

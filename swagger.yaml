@@ -77,11 +77,11 @@ paths:
             text/plain:
               schema:
                 type: string
-  /projects/{id}/pdf:
+  /projects/{projectId}/pdf:
     post:
       parameters:
         - in: path
-          name: id
+          name: projectId
           schema:
             type: integer
           required: true

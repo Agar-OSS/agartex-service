@@ -1,4 +1,5 @@
-use std::{process::Command, fmt::Debug, ffi::OsStr};
+use std::{fmt::Debug, ffi::OsStr};
+use async_process::Command;
 
 use axum::async_trait;
 use tracing::{error, info};
@@ -28,9 +29,8 @@ impl ExecutionService for ProcessExecutionService {
         let command = Command::new(comm)
             .args(args)
             .output();
-
-
-        let out = match command {
+        
+        let out = match command.await {
             Ok(out) => out,
             Err(err) => {
                 error!(%err);
@@ -38,18 +38,18 @@ impl ExecutionService for ProcessExecutionService {
             }
         };
 
-        if !out.status.success() {
-            match String::from_utf8(out.stdout) {
-                Ok(msg) => Err(ProcessExecutionError::StatusError(out.status.code(), msg)),
-                Err(err) => {
-                    error!(%err);
-                    Err(ProcessExecutionError::Unknown)
-                }
+        let msg = match String::from_utf8(out.stdout) {
+            Ok(msg) => msg,
+            Err(err) => {
+                error!(%err);
+                return Err(ProcessExecutionError::Unknown);
             }
-        } else if let Ok(msg) = String::from_utf8(out.stdout) {
-            Ok(msg)
+        };
+
+        if !out.status.success() {
+            Err(ProcessExecutionError::StatusError(out.status.code(), msg))
         } else {
-            Err(ProcessExecutionError::Unknown)
+            Ok(msg)
         }
     }
 }
