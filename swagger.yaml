@@ -79,6 +79,8 @@ paths:
                 type: string
   /projects/{projectId}/pdf:
     post:
+      security:
+        - session_id: []
       parameters:
         - in: path
           name: projectId
@@ -138,8 +140,6 @@ paths:
                 format: binary
         400:
           description: Malformed request
-        401:
-          description: Unauthorized to execute operation
         415:
           description: Unsupported media type
         422:
