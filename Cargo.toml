@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.70"
+async-process = "1.7.0"
 axum = { version = "0.6.10", features = ["headers"] }
 axum-extra = { version = "0.7.1", features = ["cookie"] }
 bcrypt = "0.14.0"
@@ -21,6 +22,7 @@ regex = "1.7.3"
 serde = { version = "1.0.156", features = ["derive"] }
 sqlx = { version = "0.6.2", features = ["postgres", "runtime-tokio-rustls", "chrono"] }
 tokio = { version = "1.26.0", features = ["macros", "rt-multi-thread"] }
+tokio-util = { version = "0.7.7", features = ["io"] }
 tower = "0.4.13"
 tower-http = { version = "0.4.0", features = ["cors"] }
 tracing = "0.1.37"
